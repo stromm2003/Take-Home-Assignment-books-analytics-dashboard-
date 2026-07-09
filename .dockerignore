@@ -1,0 +1,26 @@
+# Keep the Docker build context small and clean.
+# This applies to the backend image (its build context is the project root).
+
+# Python virtual env — huge, never needed in the image
+venv/
+.venv/
+
+# Python caches
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Git & editor metadata
+.git/
+.gitignore
+.claude/
+.vscode/
+
+# The frontend has its own image; the backend doesn't need it
+frontend/
+
+# Local env file (compose supplies env vars; never bake secrets into the image)
+.env
+
+# Docs / misc
+*.md

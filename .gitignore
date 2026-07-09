@@ -1,0 +1,35 @@
+# ---------- Python ----------
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---------- Environment / secrets ----------
+# Never commit real credentials. .env.example (committed) documents the keys.
+.env
+*.env
+!.env.example
+
+# ---------- Node (in case frontend tooling is added later) ----------
+node_modules/
+
+# ---------- Editor / IDE ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+
+# ---------- Tooling ----------
+.claude/
+
+# ---------- Docker ----------
+# Named volumes (e.g. postgres_data) live inside Docker, not the repo, so there is
+# nothing to ignore here. This entry only covers a local compose override file.
+docker-compose.override.yml

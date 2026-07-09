@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Books Analytics</title>
+  <link rel="stylesheet" href="style.css?v=4" />
+</head>
+<body>
+  <!--
+    STRUCTURE ONLY. Numbers, badges, and charts are injected by the JS files
+    (data.js -> charts.js -> app.js) from the live FastAPI endpoints.
+    Layout: dark collapsible sidebar + light main area with three pages.
+  -->
+  <div class="app" id="app">
+
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar">
+      <div class="side-brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">Books Analytics</span>
+          <span class="brand-sub">Enterprise</span>
+        </span>
+      </div>
+
+      <nav class="side-nav" role="tablist">
+        <button class="nav-item is-active" data-page="overview" role="tab">
+          <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+          <span class="nav-label">Overview</span>
+        </button>
+        <button class="nav-item" data-page="analytics" role="tab">
+          <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/>
+          </svg>
+          <span class="nav-label">Analytics</span>
+        </button>
+        <button class="nav-item" data-page="books" role="tab">
+          <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v13.5"/>
+            <path d="M6.5 17H19a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 15.5V5.5A2.5 2.5 0 0 0 6.5 8"/>
+          </svg>
+          <span class="nav-label">Books</span>
+        </button>
+      </nav>
+
+      <!-- Operational status -->
+      <div class="side-section">
+        <div class="side-heading">System Health</div>
+        <div class="health-row"><span class="hdot" id="hd-api"></span><span class="health-name">API</span><span class="health-val" id="hv-api">…</span></div>
+        <div class="health-row"><span class="hdot" id="hd-db"></span><span class="health-name">PostgreSQL</span><span class="health-val" id="hv-db">…</span></div>
+        <div class="health-row"><span class="hdot" id="hd-scraper"></span><span class="health-name">Scraper</span><span class="health-val" id="hv-scraper">…</span></div>
+
+        <div class="sync-card">
+          <div class="sync-label">Last Sync</div>
+          <div class="sync-time" id="sync-time">—</div>
+        </div>
+      </div>
+
+      <button class="collapse-btn" id="collapse-btn" title="Collapse sidebar">
+        <svg class="nav-ico chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span class="nav-label">Collapse</span>
+      </button>
+      <div class="side-version">v1.0.0</div>
+    </aside>
+
+    <!-- ===================== Main area ===================== -->
+    <div class="main">
+      <header class="mainbar">
+        <button class="icon-btn" id="nav-toggle" aria-label="Toggle navigation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <h1 class="page-title" id="page-title">Overview</h1>
+        <div class="spacer"></div>
+        <div class="updated">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>
+          </svg>
+          <span id="updated-text">Updated just now</span>
+        </div>
+        <div class="conn"><span id="conn-dot" class="dot"></span><span id="conn-text">Connecting…</span></div>
+      </header>
+
+      <main class="content">
+
+        <!-- ============ PAGE: Overview ============ -->
+        <section id="page-overview" class="page is-active" role="tabpanel">
+          <!-- Compact glass hero -->
+          <div class="hero">
+            <div class="hero-main">
+              <span class="hero-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </span>
+              <div>
+                <h2>Catalogue Overview</h2>
+                <p>Real-time summary of your book catalogue.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI cards (each opens a searchable, filterable book list) -->
+          <div id="overview-cards" class="card-grid"></div>
+          <p class="section-hint">Tip: click any card to explore the books behind it.</p>
+
+          <!-- Quick Insights (tile strip, generated by app.js) -->
+          <div class="section-title-row">
+            <h3 class="section-title">Quick Insights</h3>
+            <span class="section-caption">Auto-generated from the current catalogue</span>
+          </div>
+          <div class="insights" id="insights-list"></div>
+
+          <!-- Top 3 highlights (2x2 grid, generated by app.js) -->
+          <div class="top3-grid" id="top3-grid"></div>
+        </section>
+
+        <!-- ============ PAGE: Analytics (charts only) ============ -->
+        <section id="page-analytics" class="page" role="tabpanel">
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-head"><div><h3 class="chart-title">Rating Distribution</h3>
+                <p class="chart-desc">Share of books at each star rating.</p></div>
+                <button class="btn-ghost" data-export="chart-rating-donut">⇩ PNG</button></div>
+              <div class="chart-body"><canvas id="chart-rating-donut"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><div><h3 class="chart-title">Price Distribution</h3>
+                <p class="chart-desc">Number of books per £10 price band.</p></div>
+                <button class="btn-ghost" data-export="chart-price-hist">⇩ PNG</button></div>
+              <div class="chart-body"><canvas id="chart-price-hist"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><div><h3 class="chart-title">Stock Status</h3>
+                <p class="chart-desc">In stock vs out of stock.</p></div>
+                <button class="btn-ghost" data-export="chart-stock-pie">⇩ PNG</button></div>
+              <div class="chart-body"><canvas id="chart-stock-pie"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><div><h3 class="chart-title">Price Range</h3>
+                <p class="chart-desc">Books grouped into broad price bands.</p></div>
+                <button class="btn-ghost" data-export="chart-price-range">⇩ PNG</button></div>
+              <div class="chart-body"><canvas id="chart-price-range"></canvas></div>
+            </div>
+            <div class="chart-card span-2">
+              <div class="chart-head"><div><h3 class="chart-title">Average Price by Rating</h3>
+                <p class="chart-desc">Mean price for each star rating.</p></div>
+                <button class="btn-ghost" data-export="chart-avg-price">⇩ PNG</button></div>
+              <div class="chart-body"><canvas id="chart-avg-price"></canvas></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Books ============ -->
+        <section id="page-books" class="page" role="tabpanel">
+          <div class="table-card">
+            <div class="toolbar">
+              <input type="search" id="book-search" class="input" placeholder="Search by title…" />
+              <select id="filter-rating" class="input select">
+                <option value="">All ratings</option>
+                <option value="5">5 stars</option><option value="4">4 stars</option>
+                <option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option>
+              </select>
+              <select id="filter-availability" class="input select">
+                <option value="">All availability</option>
+                <option value="in">In stock</option><option value="out">Out of stock</option>
+              </select>
+              <select id="filter-price" class="input select">
+                <option value="">All prices</option>
+                <option value="0-20">£0 – £20</option><option value="20-40">£20 – £40</option><option value="40-999">£40+</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort="title">Title</th>
+                    <th class="sortable num" data-sort="price">Price</th>
+                    <th class="sortable num" data-sort="rating">Rating</th>
+                    <th class="sortable" data-sort="availability">Availability</th>
+                    <th class="num">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="books-body"></tbody>
+              </table>
+            </div>
+            <div class="table-foot">
+              <div class="foot-left">
+                <label>Rows
+                  <select id="page-size" class="input select small">
+                    <option>10</option><option selected>25</option><option>50</option><option>100</option>
+                  </select>
+                </label>
+                <span id="result-count" class="muted"></span>
+              </div>
+              <div class="pager" id="pager"></div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+  </div>
+
+  <!-- Modal (single-book detail + KPI drill-down list) -->
+  <div id="book-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="data.js?v=4"></script>
+  <script src="charts.js?v=4"></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>

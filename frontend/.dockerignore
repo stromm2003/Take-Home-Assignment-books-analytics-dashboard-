@@ -1,0 +1,3 @@
+# These don't belong in the served web root.
+Dockerfile
+.dockerignore

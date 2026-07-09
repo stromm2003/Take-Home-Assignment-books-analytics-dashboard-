@@ -1,0 +1,71 @@
+# One command brings up the whole stack:  docker compose up
+#
+# Services:
+#   postgres  — the database (data persists in a named volume)
+#   backend   — FastAPI; on first boot it creates tables + runs the scraper/seed
+#   frontend  — nginx serving the static dashboard
+#
+# Env vars use ${VAR:-default} so this works with NO .env file at all. Create a
+# .env (see .env.example) only if you want to override the defaults.
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: books_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-books_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # The backend waits for this healthcheck to pass before starting.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-books_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      # Context is the PROJECT ROOT so the image can copy backend/ AND scraper/.
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: books_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the database host is the service name.
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-books_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "8000:8000"
+    # Healthy once the API answers. start_period is generous: the very first
+    # boot scrapes ~1000 books before uvicorn starts.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: books_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:
