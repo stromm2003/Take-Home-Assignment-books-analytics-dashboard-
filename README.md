@@ -1,8 +1,8 @@
 # Books Analytics — Full-Stack Data Engineering Take-Home
 
 An end-to-end application that **scrapes** book data from a public website,
-**stores it in PostgreSQL, **serves** it through a **FastAPI** REST API, and
-**visualises** it in a modern analytics **dashboard** all runnable with a single
+**stores** it in **PostgreSQL**, **serves** it through a **FastAPI** REST API, and
+**visualises** it in a modern analytics **dashboard** — all runnable with a single
 command:
 
 ```bash
